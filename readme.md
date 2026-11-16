@@ -1,4 +1,5 @@
-# HARNASIK - Platforma Zgłaszania i Obsługi Usterek Infrastruktury Miejskiej
+# HARNASIK
+## Platforma Zgłaszania i Obsługi Usterek Infrastruktury Miejskiej
 
 ## Opis projektu
 
