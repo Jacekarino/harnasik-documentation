@@ -1,5 +1,5 @@
 # Product Requirements Document (PRD): HARNASIK
-## Platforma Zgłaszania i Obsługi Usterek Infrastruktury Miejskiej
+Platforma Zgłaszania i Obsługi Usterek Infrastruktury Miejskiej
 
 | Metryczka dokumentu | Wartość |
 | :--- | :--- |
