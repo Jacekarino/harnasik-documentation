@@ -1,9 +1,8 @@
 # Product Requirements Document (PRD): HARNASIK
-Platforma Zgłaszania i Obsługi Usterek Infrastruktury Miejskiej
 
 | Metryczka dokumentu | Wartość |
 | :--- | :--- |
-| **Nazwa projektu** | Platforma do zgłaszania i obsługi usterek infrastruktury miejskiej |
+| **Nazwa projektu** | HARNASIK - Platforma do zgłaszania i obsługi usterek infrastruktury miejskiej |
 | **Wersja dokumentu** | 1.0 |
 | **Status** | Zatwierdzony |
 | **Data opracowania** | 2026-10-31 |
