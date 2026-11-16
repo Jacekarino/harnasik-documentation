@@ -82,3 +82,4 @@ System został zaprojektowany w architekturze odseparowanej (**Headless REST API
   * [`adr/adr-010-cykl-zycia-zgloszenia-i-system-powiadomien.md`](./adr/adr-010-cykl-zycia-zgloszenia-i-system-powiadomien.md) - Maszyna stanów zgłoszenia, obserwowanie oraz system powiadomień o zmianie statusu.
   * [`adr/adr-011-przechowywanie-i-przetwarzanie-zdjec.md`](./adr/adr-011-przechowywanie-i-przetwarzanie-zdjec.md) - Przechowywanie i walidacja załączników fotograficznych (zdjęcia usterek oraz zdjęcia po naprawie).
   * [`adr/adr-012-logowanie-zdarzen-i-audyt-systemowy.md`](./adr/adr-012-logowanie-zdarzen-i-audyt-systemowy.md) - Centralne logowanie zdarzeń aplikacyjnych i audytowych dla panelu administratora.
+* [`event-storming.md`](./event-storming.md) - Wynik sesji event storming (2026-11-07).

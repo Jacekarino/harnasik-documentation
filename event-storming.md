@@ -1,7 +1,7 @@
 # Event Storming: HARNASIK
 
 ## 1. Cel dokumentu
-Dokument przedstawia wynik sesji **Event Storming** dla systemu zgłaszania i obsługi usterek infrastruktury miejskiej. Model opisuje główne zdarzenia domenowe, komendy, aktorów, agregaty, polityki oraz systemy zewnętrzne zaangażowane w działanie aplikacji.
+Dokument przedstawia wynik sesji **Event Storming** (2026-11-07) dla systemu zgłaszania i obsługi usterek infrastruktury miejskiej. Model opisuje główne zdarzenia domenowe, komendy, aktorów, agregaty, polityki oraz systemy zewnętrzne zaangażowane w działanie aplikacji.
 
 ---
 
