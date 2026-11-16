@@ -68,7 +68,7 @@ System został zaprojektowany w architekturze odseparowanej (**Headless REST API
 ## Struktura dokumentacji
 
 * [`README.md`](./README.md) - Ogólny przegląd projektu, architektury i nawigacja po dokumentacji.
-* [`prd.md`](./prd.md) - Dokument Wymagań Produktowych (*Product Requirements Document*).
+* [`prd.md`](./prd.md) - Wstępny dokument wymagań produktowych dla aplikacji webowej.
 * **Rejestr Decyzji Architektonicznych (ADR):**
   * [`adr/adr-001-architektura-systemu-rest-api-spa.md`](./adr/adr-001-architektura-systemu-rest-api-spa.md) - Architektura systemu: separacja Backend REST API i Frontend SPA.
   * [`adr/adr-002-wybor-frameworka-backendowego-laravel.md`](./adr/adr-002-wybor-frameworka-backendowego-laravel.md) - Wybór frameworka backendowego (Laravel).
@@ -82,4 +82,7 @@ System został zaprojektowany w architekturze odseparowanej (**Headless REST API
   * [`adr/adr-010-cykl-zycia-zgloszenia-i-system-powiadomien.md`](./adr/adr-010-cykl-zycia-zgloszenia-i-system-powiadomien.md) - Maszyna stanów zgłoszenia, obserwowanie oraz system powiadomień o zmianie statusu.
   * [`adr/adr-011-przechowywanie-i-przetwarzanie-zdjec.md`](./adr/adr-011-przechowywanie-i-przetwarzanie-zdjec.md) - Przechowywanie i walidacja załączników fotograficznych (zdjęcia usterek oraz zdjęcia po naprawie).
   * [`adr/adr-012-logowanie-zdarzen-i-audyt-systemowy.md`](./adr/adr-012-logowanie-zdarzen-i-audyt-systemowy.md) - Centralne logowanie zdarzeń aplikacyjnych i audytowych dla panelu administratora.
-* [`event-storming.md`](./event-storming.md) - Wynik sesji event storming (2026-11-07).
+* [`event-storming.md`](./event-storming.md) - Wynik sesji event stormingu (2026-11-07).
+* [`backlog.md`](./backlog.md) - Lista zadań do wykonania i plan sprintów.
+* [`backlog.csv`](./backlog.csv) - Plik z listą zadań gotową do importu w wybranym narzędziu.
+* [`user-stories.md`](./user-stories.md) - Przykładowe historyjki użytkowników aplikacji.

@@ -4,7 +4,7 @@
 | :--- | :--- |
 | **Nazwa projektu** | HARNASIK - Platforma do zgłaszania i obsługi usterek infrastruktury miejskiej |
 | **Wersja dokumentu** | 1.0 |
-| **Status** | Zatwierdzony |
+| **Status** | Zaakceptowane |
 | **Data opracowania** | 2026-10-31 |
 | **Autorzy** | Jakub Broszko, Maciej Wróblewski, Jacek Kowalczyk |
 | **Stos technologiczny** | Laravel, React, TypeScript, Tailwind CSS, SQLite |
