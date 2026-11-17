@@ -5,7 +5,43 @@ Platforma Zgłaszania i Obsługi Usterek Infrastruktury Miejskiej
 
 Projekt stanowi kompleksową platformę internetową umożliwiającą mieszkańcom zgłaszanie usterek oraz problemów dotyczących infrastruktury miejskiej (takich jak uszkodzone latarnie, dziury w drodze, uszkodzone znaki drogowe, dzikie wysypiska śmieci czy zniszczona mała architektura), a pracownikom urzędu oraz administratorom - efektywne zarządzanie cyklem życia zgłoszeń i analizę danych przestrzennych.
 
-System został zaprojektowany w architekturze odseparowanej (**Headless REST API + Single Page Application**), zapewniając jasny podział odpowiedzialności pomiędzy warstwą serwerową a kliencką, udokumentowany za pomocą standardu **OpenAPI 3.0**.
+System został zaprojektowany w architekturze odseparowanej (**Headless REST API + Single Page Application**) opartej na **trzech niezależnych repozytoriach** (`backend`, `frontend`, `documentation`), zapewniając pełną autonomię rozwoju i jasny podział odpowiedzialności pomiędzy warstwą serwerową a kliencką, połączonych poprzez kontrakt **REST API (OpenAPI 3.0)**.
+
+---
+
+## Architektura repozytoriów (Multi-Repo)
+
+Projekt **HARNASIK** składa się z trzech odrębnych repozytoriów połączonych za pośrednictwem sieci i protokołu HTTP (REST API):
+
+```
+                      +-------------------------------+              
+                      |     harnasik-documentation    |
+                      +-------------------------------+
+                                      |
+                      definiuje kontrakt i wymagania
+                                      v
++-----------------------------+               +-----------------------------+
+|      harnasik-backend       |  REST API     |      harnasik-frontend      |
+|-----------------------------| (JSON / CORS) |-----------------------------|
+| - PHP 8.3+ / Laravel 11     | <===========> | - React 18+ / TypeScript    |
+| - SQLite (WAL)              | Bearer Tokens | - Vite / Tailwind CSS       |
+| - Sanctum / Socialite OAuth |  OpenAPI 3.0  | - Leaflet / OSM Maps        |
+| - L5-Swagger / OpenAPI 3.0  |               | - Axios HTTP Client         |
++-----------------------------+               +-----------------------------+
+```
+
+1. **`harnasik-backend`** (Backend REST API):
+   * Odpowiada za logikę biznesową, persystencję danych w SQLite (tryb WAL), autoryzację dwutorową (Sanctum + Socialite OAuth 2.0), kontrolę ról RBAC (Spatie), przetwarzanie i składowanie załączników fotograficznych, wyszukiwanie przestrzenne (Bounding Box + Haversine) oraz logowanie audytowe.
+   * Wystawia bezstanowe punkty końcowe REST API oraz interaktywną dokumentację Swagger UI (`/api/documentation`) generowaną z atrybutów PHP.
+   * Zarządza polityką CORS zezwalającą na zapytania z warstwy SPA.
+
+2. **`harnasik-frontend`** (Frontend SPA):
+   * Niezależna aplikacja kliencka Single Page Application dla mieszkańców, pracowników urzędu i administratorów.
+   * Odpowiada za prezentację wizualną, interakcję z mapą Leaflet (klastrowanie `markercluster`, heatmapa `leaflet.heat`), obsługę geolokalizacji GPS (HTML5 Geolocation API).
+   * Łączy się z backendem asynchronicznie poprzez klienta HTTP (Axios) w oparciu o zmienną środowiskową `VITE_API_BASE_URL` oraz tokeny Bearer.
+
+3. **`harnasik-documentation`** (Dokumentacja projektu – niniejsze repozytorium):
+   * Centralne repozytorium gromadzące pełną dokumentację analityczną, architektoniczną i projektową.
 
 ---
 

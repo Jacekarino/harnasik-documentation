@@ -22,7 +22,7 @@ Rozwiązanie mapowe musi być bezpłatne, nie może wymagać podpinania karty kr
 ### Opcja 1: Google Maps JavaScript API
 * **Opis:** Komercyjna usługa mapowa od Google.
 * **Zalety:** Bardzo dokładne podkłady mapowe i gotowe komponenty.
-* **Wady:** Wymaga założenia konta rozliczeniowego Google Cloud z kartą płatniczą; restrykcyjne limity darmowych wywołań i klucze API utrudniające uruchomienie projektu przez inne osoby z repozytorium.
+* **Wady:** Wymaga założenia konta rozliczeniowego Google Cloud z kartą płatniczą; restrykcyjne limity darmowych wywołań i klucze API utrudniające uruchomienie aplikacji klienckiej po sklonowaniu repozytorium frontendu.
 
 ### Opcja 2: Mapbox GL JS
 * **Opis:** Nowoczesna biblioteka wektorowa WebGL.
@@ -32,7 +32,7 @@ Rozwiązanie mapowe musi być bezpłatne, nie może wymagać podpinania karty kr
 ### Opcja 3: Leaflet + React-Leaflet + podkłady OpenStreetMap (OSM) + wtyczki `markercluster` i `leaflet.heat`
 * **Opis:** Otwartoźródłowa biblioteka mapowa Leaflet z oficjalnym wrapperem `react-leaflet` dla React 18+, korzystająca z darmowych kafelków rastrowych OpenStreetMap oraz natywnego interfejsu przeglądarki `navigator.geolocation`.
 * **Zalety:**
-  * Całkowicie darmowe rozwiązanie (Open Source, licencja BSD-2-Clause), niewymagające żadnych płatnych kluczy API - projekt działa od razu po sklonowaniu repozytorium.
+  * Całkowicie darmowe rozwiązanie (Open Source, licencja BSD-2-Clause), niewymagające żadnych płatnych kluczy API - aplikacja działa od razu po sklonowaniu repozytorium frontendu.
   * Wtyczka **`leaflet.markercluster`** pozwala estetycznie grupować znaczniki przy oddaleniu mapy miasta.
   * Wtyczka **`leaflet.heat`** umożliwia natychmiastowe wyrenderowanie na płótnie HTML5 Canvas **mapy ciepła (heatmap)** dla administratora na podstawie tablicy punktów `[latitude, longitude, intensity]`.
 * **Wady:** Renderowanie rastrowe (w pełni wystarczające dla skali miejskiej).

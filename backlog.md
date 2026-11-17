@@ -26,7 +26,7 @@
 
 | ID | User Story | Epik | Tytuł zadania / funkcjonalności | Rola | Warstwa | Priorytet | SP | Sprint | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :---: | :---: | :--- |
-| **PBI-01** | Tech / NFR-01 | Infrastruktura | Inicjalizacja repozytorium monorepo: Backend Laravel 11 (API-only) + Frontend React 18 (TypeScript, Vite, Tailwind CSS) + konfiguracja CORS | Deweloper | Fullstack | Must Have | 3 | Sprint 1 | Do zrobienia |
+| **PBI-01** | Tech / NFR-01 | Infrastruktura | Inicjalizacja trzech niezależnych repozytoriów (backend Laravel 11 API-only, frontend React 18 TS Vite SPA, documentation) + konfiguracja CORS i połączenia przez REST API | Deweloper | Fullstack | Must Have | 3 | Sprint 1 | Do zrobienia |
 | **PBI-02** | Tech / NFR-06 | Infrastruktura | Konfiguracja bazy danych SQLite w trybie WAL, przygotowanie migracji wszystkich tabel, indeksów B-Tree (`latitude`, `longitude`) oraz seederów | Deweloper | Backend | Must Have | 5 | Sprint 1 | Do zrobienia |
 | **PBI-03** | Tech / NFR-02 | Infrastruktura | Konfiguracja `l5-swagger` (OpenAPI 3.0), schematu autoryzacji Bearer oraz generowania dokumentacji Swagger UI (`/api/documentation`) | Deweloper | Backend | Must Have | 3 | Sprint 1 | Do zrobienia |
 | **PBI-04** | US-01 | EPIC-01: Auth | Implementacja rejestracji klasycznej (e-mail + hasło) w REST API oraz formularza rejestracji w React z walidacją | Gość | Fullstack | Must Have | 3 | Sprint 1 | Do zrobienia |
@@ -59,7 +59,7 @@
 ## 3. Definicja Ukończenia (Definition of Done – DoD)
 
 Każdy element z Product Backlogu uznaje się za ukończony (`Done`), gdy spełnia wszystkie poniższe warunki:
-1. Kod backendowy (Laravel) i frontendowy (React + TypeScript) został zaimplementowany zgodnie z kryteriami akceptacji danej *User Story*.
+1. Kod w dedykowanych repozytoriach (`harnasik-backend` i `harnasik-frontend`) oraz dokumentacja (w `harnasik-documentation`) zostały zaimplementowane i zaktualizowane zgodnie z kryteriami akceptacji danej *User Story*.
 2. Wszystkie nowe lub zmodyfikowane endpointy REST API posiadają aktualne atrybuty OpenAPI (`l5-swagger`), a plik specyfikacji generuje się bez błędów.
 3. Dane wejściowe są walidowane po stronie serwera za pomocą klas `FormRequest`, a dostęp jest chroniony odpowiednimi uprawnieniami (`Sanctum` + `Spatie Permission`).
 4. Komponenty frontendowe w React są w pełni otypowane w TypeScript (brak użycia typu `any`) i poprawnie wyświetlają się na ekranach mobilnych oraz desktopowych (Tailwind CSS).

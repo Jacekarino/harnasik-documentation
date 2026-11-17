@@ -4,7 +4,7 @@
 | :--- | :--- |
 | **Nazwa projektu** | HARNASIK - Platforma do zgłaszania i obsługi usterek infrastruktury miejskiej |
 | **Wersja dokumentu** | 1.0 |
-| **Status** | Zaakceptowane |
+| **Status** | Zatwierdzony |
 | **Data opracowania** | 2026-10-31 |
 | **Autorzy** | Jakub Broszko, Maciej Wróblewski, Jacek Kowalczyk |
 | **Stos technologiczny** | Laravel, React, TypeScript, Tailwind CSS, SQLite |
@@ -22,6 +22,12 @@ Celem projektu jest stworzenie nowoczesnej, responsywnej aplikacji webowej dzia�
 2. Ograniczy liczbę zduplikowanych zgłoszeń dzięki automatycznemu wyszukiwaniu podobnych problemów w pobliżu oraz mechanizmowi poparcia istniejącego zgłoszenia („Ten problem również mnie dotyczy”).
 3. Zapewni pełną transparentność procesu obsługi poprzez publiczny podgląd statusów, komentarzy urzędowych, dokumentacji fotograficznej po naprawie oraz statystyk realizacji.
 4. Wyposaży pracowników urzędu i administratorów w ergonomiczny panel zarządzania zgłoszeniami, kategoriami, użytkownikami, logami systemowymi oraz analityczną mapą ciepła (heatmap).
+
+### 1.3. Architektura repozytoriów projektu
+Projekt realizowany jest w modelu **trzech niezależnych repozytoriów** połączonych poprzez sieć i kontrakt REST API:
+1. **`harnasik-backend`** – repozytorium warstwy serwerowej: implementacja logiki biznesowej w PHP 8.3 / Laravel 11, silnik relacyjny SQLite w trybie WAL, obsługa autoryzacji tokenowej (Sanctum) i OAuth (Socialite), kontrola dostępu RBAC oraz automatycznie generowana dokumentacja OpenAPI 3.0 (`/api/documentation`).
+2. **`harnasik-frontend`** – repozytorium warstwy klienckiej: aplikacja Single Page Application w React 18 / TypeScript / Vite / Tailwind CSS z mapami Leaflet (`react-leaflet`, `leaflet.markercluster`, `leaflet.heat`), komunikująca się z backendem asynchronicznie poprzez klienta HTTP (Axios) z wykorzystaniem zmiennych środowiskowych (`VITE_API_BASE_URL`).
+3. **`harnasik-documentation`** – dedykowane repozytorium dokumentacji (niniejsze repozytorium): centralne źródło wymagań produktowych (PRD), rejestru decyzji architektonicznych (ADR), modelowania procesów domenowych (Event Storming), rejestru zadań (Product Backlog) oraz historyjek użytkownika (User Stories).
 
 ---
 
@@ -100,7 +106,7 @@ W systemie zdefiniowano cztery poziomy dostępu:
 
 ## 4. Wymagania niefunkcjonalne i architektoniczne (Non-Functional Requirements)
 
-* **NFR-01 (Separacja Frontend-Backend i REST API):** Warstwa prezentacji (React + TypeScript) oraz warstwa serwerowa (Laravel) muszą być całkowicie odseparowane i komunikować się wyłącznie przez bezstanowe API REST w formacie JSON.
+* **NFR-01 (Separacja Frontend-Backend, Architektura Multi-Repo i REST API):** Projekt jest zorganizowany w oparciu o trzy niezależne repozytoria (`harnasik-backend`, `harnasik-frontend`, `harnasik-documentation`). Warstwa prezentacji (React + TypeScript) oraz warstwa serwerowa (Laravel) są całkowicie odseparowane pod względem kodu, zależności i wdrożenia, a ich komunikacja odbywa się wyłącznie przez bezstanowe API REST w formacie JSON z obsługą polityki CORS.
 * **NFR-02 (Dokumentacja OpenAPI):** Backend musi posiadać kompletną, aktualną dokumentację zgodną ze specyfikacją **OpenAPI 3.0** (wygenerowaną przy użyciu `l5-swagger`), udostępniającą interaktywny interfejs Swagger UI dla wszystkich endpointów.
 * **NFR-03 (Geolokalizacja i zapytania przestrzenne):** System musi przechowywać współrzędne geograficzne w układzie WGS84 (`latitude`, `longitude`) i realizować wyszukiwanie bliskich zgłoszeń z uwzględnieniem rzeczywistej odległości geograficznej na sferze (pre-filtracja Bounding Box w SQLite + formuła Haversine’a).
 * **NFR-04 (Responsywność - Mobile First):** Interfejs użytkownika zbudowany w Tailwind CSS musi być w pełni responsywny i przystosowany do wygodnego zgłaszania usterek w terenie za pomocą smartfona.
