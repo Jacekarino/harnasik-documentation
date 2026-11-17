@@ -61,7 +61,7 @@ W systemie zdefiniowano cztery poziomy dostępu:
 ### 3.1. Uwierzytelnianie i zarządzanie kontem
 * **FR-01 (Rejestracja klasyczna):** Użytkownik może zarejestrować się w systemie podając imię/nazwę, adres e-mail oraz hasło spełniające wymogi bezpieczeństwa.
 * **FR-02 (Logowanie klasyczne):** Zarejestrowany użytkownik może zalogować się przy użyciu adresu e-mail oraz hasła (autoryzacja oparta o tokeny Laravel Sanctum).
-* **FR-03 (Logowanie i rejestracja OAuth 2.0):** Użytkownik może zarejestrować się oraz zalogować za pomocą zewnętrznego dostawcy tożsamości OAuth 2.0 (np. Google / GitHub) obsługom poprzez Laravel Socialite.
+* **FR-03 (Logowanie i rejestracja OAuth 2.0):** Użytkownik może zarejestrować się oraz zalogować za pomocą zewnętrznego dostawcy tożsamości OAuth 2.0 (np. Google / GitHub) obsługiwanego poprzez Laravel Socialite.
 
 ### 3.2. Mapa interaktywna i przeglądanie zgłoszeń
 * **FR-04 (Widok mapy zgłoszeń):** Użytkownik widzi na interaktywnej mapie (Leaflet + OpenStreetMap) znaczniki reprezentujące zgłoszone problemy infrastrukturalne.
