@@ -18,10 +18,10 @@ Należało określić sposób przesyłania, walidacji, składowania i serwowania
 
 ## 2. Rozważane opcje
 
-### Opcja 1: Przechowywanie obrazów jako BLOB / Base64 bezpośrednio w bazie SQLite
-* **Opis:** Kodowanie zdjęć do formatu Base64 i zapis w kolumnie `TEXT` lub `BLOB` w pliku `database.sqlite`.
-* **Zalety:** Wszystko w jednym pliku bazodanowym.
-* **Wady:** Gwałtowny rozrost pliku bazy SQLite do setek megabajtów, drastyczny spadek wydajności zapytań i wysoka konsumpcja pamięci RAM przy serializacji odpowiedzi JSON.
+### Opcja 1: Przechowywanie obrazów jako BLOB / Base64 bezpośrednio w bazie relacyjnej (PostgreSQL)
+* **Opis:** Kodowanie zdjęć do formatu Base64 lub typu BYTEA w tabeli bazy danych.
+* **Zalety:** Wszystko w jednej bazie danych.
+* **Wady:** Gwałtowny rozrost bazy danych do gigabajtów, drastyczny spadek wydajności backupów i replikacji oraz wysoka konsumpcja pamięci RAM przy serializacji odpowiedzi JSON.
 
 ### Opcja 2: Zewnętrzna chmura obiektowa (AWS S3 / Cloudflare R2 / Cloudinary)
 * **Opis:** Przesyłanie zdjęć do zewnętrznego dostawcy chmurowego.
@@ -35,7 +35,7 @@ Należało określić sposób przesyłania, walidacji, składowania i serwowania
   * Przechowywanie metadanych w tabeli `issue_attachments` z kolumną `type` przyjmującą wartości:
     * `before` - zdjęcia pierwotnej usterki dodane przez zgłaszającego mieszkańca,
     * `after` - zdjęcia powykonawcze dodane przez pracownika urzędu przy statusie `rozwiązane`.
-* **Zalety:** Szybka praca bazy SQLite (przechowuje wyłącznie lekkie ścieżki tekstowe); natywne wsparcie dla pamięci podręcznej przeglądarki (HTTP caching dla statycznych obrazów); brak zależności od zewnętrznych płatnych usług chmurowych, przy jednoczesnym zachowaniu pełnej abstrakcji `Storage::disk()`, która w razie wdrożenia produkcyjnego pozwala przełączyć sterownik na `s3` jedną zmienną w `.env`.
+* **Zalety:** Szybka praca bazy PostgreSQL (przechowuje wyłącznie lekkie ścieżki tekstowe i metadane); natywne wsparcie dla pamięci podręcznej przeglądarki (HTTP caching dla statycznych obrazów); brak zależności od zewnętrznych płatnych usług chmurowych, przy jednoczesnym zachowaniu pełnej abstrakcji `Storage::disk()`, która w razie wdrożenia produkcyjnego pozwala przełączyć sterownik na `s3` jedną zmienną w `.env`.
 * **Wady:** Wymaga wykonania komendy `php artisan storage:link` podczas pierwszej konfiguracji projektu.
 
 ---

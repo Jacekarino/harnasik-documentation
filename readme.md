@@ -24,14 +24,14 @@ Projekt **HARNASIK** składa się z trzech odrębnych repozytoriów połączonyc
 |      harnasik-backend       |  REST API     |      harnasik-frontend      |
 |-----------------------------| (JSON / CORS) |-----------------------------|
 | - PHP 8.3+ / Laravel 11     | <===========> | - React 18+ / TypeScript    |
-| - SQLite (WAL)              | Bearer Tokens | - Vite / Tailwind CSS       |
+| - PostgreSQL 16+ / PostGIS  | Bearer Tokens | - Vite / Tailwind CSS       |
 | - Sanctum / Socialite OAuth |  OpenAPI 3.0  | - Leaflet / OSM Maps        |
 | - L5-Swagger / OpenAPI 3.0  |               | - Axios HTTP Client         |
 +-----------------------------+               +-----------------------------+
 ```
 
 1. **`harnasik-backend`** (Backend REST API):
-   * Odpowiada za logikę biznesową, persystencję danych w SQLite (tryb WAL), autoryzację dwutorową (Sanctum + Socialite OAuth 2.0), kontrolę ról RBAC (Spatie), przetwarzanie i składowanie załączników fotograficznych, wyszukiwanie przestrzenne (Bounding Box + Haversine) oraz logowanie audytowe.
+   * Odpowiada za logikę biznesową, persystencję danych w PostgreSQL z rozszerzeniem PostGIS, autoryzację dwutorową (Sanctum + Socialite OAuth 2.0), kontrolę ról RBAC (Spatie), przetwarzanie i składowanie załączników fotograficznych, natywne zapytania geoprzestrzenne (ST_DWithin, ST_Distance, indeks GiST) oraz logowanie audytowe.
    * Wystawia bezstanowe punkty końcowe REST API oraz interaktywną dokumentację Swagger UI (`/api/documentation`) generowaną z atrybutów PHP.
    * Zarządza polityką CORS zezwalającą na zapytania z warstwy SPA.
 
@@ -58,7 +58,7 @@ Projekt **HARNASIK** składa się z trzech odrębnych repozytoriów połączonyc
 | Warstwa | Technologia | Przeznaczenie |
 | :--- | :--- | :--- |
 | **Backend** | PHP 8.3+ / Laravel 11 | Logika biznesowa, REST API, obsługa powiadomień i autoryzacji |
-| **Baza danych** | SQLite (tryb WAL) | Przechowywanie danych relacyjnych oraz współrzędnych geograficznych |
+| **Baza danych** | PostgreSQL 16+ z PostGIS | Przechowywanie danych relacyjnych oraz natywna obsługa typów i zapytań geoprzestrzennych GIS (indeks GiST) |
 | **Uwierzytelnianie** | Laravel Sanctum + Socialite | Autoryzacja tokenowa SPA oraz integracja OAuth 2.0 (Google / GitHub) |
 | **Uprawnienia** | Spatie Laravel Permission | Kontrola dostępu oparta na rolach (RBAC) |
 | **Dokumentacja API** | L5-Swagger (OpenAPI 3.0) | Automatyczna generacja specyfikacji REST API z atrybutów PHP |
@@ -109,16 +109,16 @@ Projekt **HARNASIK** składa się z trzech odrębnych repozytoriów połączonyc
   * [`adr/adr-001-architektura-systemu-rest-api-spa.md`](./adr/adr-001-architektura-systemu-rest-api-spa.md) - Architektura systemu: separacja Backend REST API i Frontend SPA.
   * [`adr/adr-002-wybor-frameworka-backendowego-laravel.md`](./adr/adr-002-wybor-frameworka-backendowego-laravel.md) - Wybór frameworka backendowego (Laravel).
   * [`adr/adr-003-wybor-technologii-frontendowych-react-ts-tailwind.md`](./adr/adr-003-wybor-technologii-frontendowych-react-ts-tailwind.md) - Wybór technologii warstwy klienckiej (React, TypeScript, Vite, Tailwind CSS).
-  * [`adr/adr-004-wybor-silnika-bazy-danych-sqlite.md`](./adr/adr-004-wybor-silnika-bazy-danych-sqlite.md) - Wybór silnika bazy danych SQLite z trybem WAL.
+  * [`adr/adr-004-wybor-silnika-bazy-danych-postgresql-postgis.md`](./adr/adr-004-wybor-silnika-bazy-danych-postgresql-postgis.md) - Wybór silnika relacyjnej bazy danych (PostgreSQL 16+) z rozszerzeniem przestrzennym (PostGIS).
   * [`adr/adr-005-uwierzytelnianie-sanctum-oraz-oauth-socialite.md`](./adr/adr-005-uwierzytelnianie-sanctum-oraz-oauth-socialite.md) - Uwierzytelnianie dwutorowe: klasyczne (Laravel Sanctum) oraz OAuth 2.0 (Laravel Socialite).
   * [`adr/adr-006-autoryzacja-i-kontrola-dostepu-rbac.md`](./adr/adr-006-autoryzacja-i-kontrola-dostepu-rbac.md) - Autoryzacja i model ról (RBAC) z wykorzystaniem `spatie/laravel-permission`.
   * [`adr/adr-007-dokumentacja-api-w-standardzie-openapi.md`](./adr/adr-007-dokumentacja-api-w-standardzie-openapi.md) - Dokumentowanie REST API w standardzie OpenAPI 3.0 (`l5-swagger`).
   * [`adr/adr-008-dostawca-map-i-wizualizacja-gis-leaflet-osm.md`](./adr/adr-008-dostawca-map-i-wizualizacja-gis-leaflet-osm.md) - Wybór silnika mapowego (Leaflet + OpenStreetMap) oraz wtyczek klastrowania i mapy ciepła.
-  * [`adr/adr-009-wyszukiwanie-przestrzenne-i-wykrywanie-duplikatow.md`](./adr/adr-009-wyszukiwanie-przestrzenne-i-wykrywanie-duplikatow.md) - Algorytm wyszukiwania podobnych zgłoszeń w pobliżu (Bounding Box + wzór Haversine’a) oraz mechanizm „dotyczy mnie”.
+  * [`adr/adr-009-wyszukiwanie-przestrzenne-i-wykrywanie-duplikatow.md`](./adr/adr-009-wyszukiwanie-przestrzenne-i-wykrywanie-duplikatow.md) - Wyszukiwanie przestrzenne i prewencja duplikatów z użyciem funkcji PostGIS (ST_DWithin, ST_Distance) oraz mechanizm „dotyczy mnie”.
   * [`adr/adr-010-cykl-zycia-zgloszenia-i-system-powiadomien.md`](./adr/adr-010-cykl-zycia-zgloszenia-i-system-powiadomien.md) - Maszyna stanów zgłoszenia, obserwowanie oraz system powiadomień o zmianie statusu.
   * [`adr/adr-011-przechowywanie-i-przetwarzanie-zdjec.md`](./adr/adr-011-przechowywanie-i-przetwarzanie-zdjec.md) - Przechowywanie i walidacja załączników fotograficznych (zdjęcia usterek oraz zdjęcia po naprawie).
   * [`adr/adr-012-logowanie-zdarzen-i-audyt-systemowy.md`](./adr/adr-012-logowanie-zdarzen-i-audyt-systemowy.md) - Centralne logowanie zdarzeń aplikacyjnych i audytowych dla panelu administratora.
 * [`event-storming.md`](./event-storming.md) - Wynik sesji event stormingu (2026-11-07).
-* [`backlog.md`](./backlog.md) - Lista zadań do wykonania i plan sprintów.
+* [`backlog.md`](./backlog.md) - Lista zadań do wykonania, plan sprintów i estymata.
 * [`backlog.csv`](./backlog.csv) - Plik z listą zadań gotową do importu w wybranym narzędziu.
 * [`user-stories.md`](./user-stories.md) - Przykładowe historyjki użytkowników aplikacji.

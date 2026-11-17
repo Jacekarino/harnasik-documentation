@@ -194,6 +194,6 @@ flowchart LR
 * **Rejestr logów** – tabela logów aplikacji w panelu administratora.
 
 ### Hot Spoty / Problemy rozwiązane podczas sesji (Czerwone):
-1. **Wyszukiwanie zgłoszeń po odległości w SQLite:** SQLite nie ma domyślnie funkcji geograficznych PostGIS. **Rozwiązanie:** wstępne zawężenie wyników zapytaniem `BETWEEN` dla szerokości i długości geograficznej (*Bounding Box*), a następnie dokładne obliczenie odległości ze wzoru Haversine’a.
+1. **Wyszukiwanie zgłoszeń po odległości i prewencja duplikatów:** Do wydajnej obsługi danych geoprzestrzennych wykorzystano silnik **PostgreSQL z rozszerzeniem PostGIS**. Punkty zgłoszeń przechowywane są z indeksem przestrzennym **GiST**, a wyszukiwanie w promieniu 100 m oraz sortowanie wg dystansu realizowane jest natywnie przez funkcje PostGIS (`ST_DWithin` i `ST_Distance`). Eliminuje to konieczność aproksymacji w PHP i zapewnia najwyższą precyzję geodezyjną.
 2. **Zapobieganie wielokrotnemu klikaniu „Ten problem również mnie dotyczy”:** **Rozwiązanie:** tabela pośrednia `issue_upvotes` z unikalnym kluczem złożonym `(issue_id, user_id)`.
-3. **Obliczanie średniego czasu realizacji:** **Rozwiązanie:** zapisywanie daty `resolved_at` w momencie zmiany statusu na `rozwiązane`, co pozwala łatwo wyliczyć różnicę czasu od `created_at`.
+3. **Obliczanie średniego czasu realizacji:** **Rozwiązanie:** zapisywanie daty `resolved_at` w momencie zmiany statusu na `rozwiązane`, co pozwala łatwo wyliczyć różnicę czasu od `created_at` bezpośrednio w PostgreSQL za pomocą funkcji `AVG(EXTRACT(EPOCH FROM (resolved_at - created_at)))`.

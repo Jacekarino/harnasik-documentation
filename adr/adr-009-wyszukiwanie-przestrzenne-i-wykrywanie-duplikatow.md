@@ -1,4 +1,4 @@
-# ADR-009: Wyszukiwanie podobnych zgłoszeń w pobliżu (odległość geograficzna) oraz mechanizm „Ten problem również mnie dotyczy”
+# ADR-009: Wyszukiwanie przestrzenne i wykrywanie duplikatów w oparciu o PostGIS (ST_DWithin, ST_Distance) oraz mechanizm „Ten problem również mnie dotyczy”
 
 * **Status:** Zaakceptowane
 * **Data:** 2026-10-28
@@ -10,51 +10,57 @@
 
 Wymagania funkcjonalne i niefunkcjonalne projektu stawiają szczególny nacisk na zapobieganie duplikatom zgłoszeń:
 1. Przed dodaniem nowego zgłoszenia system musi pokazać użytkownikowi **podobne zgłoszenia znajdujące się w pobliżu**.
-2. Wyszukiwanie podobnych zgłoszeń **musi uwzględniać rzeczywistą odległość geograficzną**.
+2. Wyszukiwanie podobnych zgłoszeń **musi uwzględniać rzeczywistą odległość geograficzną** na elipsoidzie WGS84.
 3. Użytkownik musi mieć możliwość oznaczenia istniejącego zgłoszenia jako **„ten problem również mnie dotyczy”** zamiast tworzenia nowego zgłoszenia.
 
-Ponieważ bazą danych jest **SQLite** (ADR-004), które w standardowej kompilacji nie posiada rozszerzenia SpatiaLite ani wbudowanych funkcji trygonometrycznych w starszych kompilacjach PDO, należało zaprojektować dokładny i wydajny algorytm wyszukiwania przestrzennego oraz strukturę bazodanową dla głosów poparcia.
+W związku z wyborem relacyjnej bazy danych **PostgreSQL z rozszerzeniem PostGIS** (ADR-004), należało zaprojektować optymalną strategię wyszukiwania przestrzennego wykorzystującą natywne możliwości silnika geoprzestrzennego oraz model relacyjny dla głosów poparcia.
 
 ---
 
 ## 2. Rozważane opcje
 
-### Opcja 1: Naiwne pobieranie całej tabeli `issues` do pamięci PHP i filtrowanie w pętli
-* **Opis:** Pobranie wszystkich rekordów `Issue::all()` i liczenie odległości w PHP.
-* **Zalety:** Prostota kodu.
-* **Wady:** Drastyczny spadek wydajności wraz ze wzrostem liczby zgłoszeń w bazie danych.
+### Opcja 1: Pobieranie całej tabeli `issues` do pamięci PHP i filtrowanie w pętli
+* **Opis:** Pobranie rekordów `Issue::all()` i wyliczanie odległości w kodzie PHP.
+* **Zalety:** Pozorna prostota implementacji.
+* **Wady:** Krytyczny spadek wydajności i pamięciożerność wraz z przyrostem bazy danych.
 
-### Opcja 2: Wymuszenie instalacji rozszerzenia C `SpatiaLite` w środowisku PHP
-* **Opis:** Ładowanie binarnego modułu GIS do SQLite.
-* **Zalety:** Funkcje przestrzenne bezpośrednio w SQL.
-* **Wady:** Domyślna instalacja PHP (na Windows/Linux/macOS) blokuje ze względów bezpieczeństwa ładowanie zewnętrznych rozszerzeń SQLite (`enableExternalExtension`), co uniemożliwiłoby uruchomienie projektu na standardowym środowisku studenckim.
+### Opcja 2: Matematyczna aproksymacja prostokątem ograniczającym (Bounding Box) i wzorem Haversine'a w SQL
+* **Opis:** Ręczne wyliczanie przedziałów współrzędnych i stosowanie wzorów trygonometrycznych w zapytaniach SQL.
+* **Zalety:** Działa na bazach bez rozszerzeń przestrzennych.
+* **Wady:** Zbędna złożoność kodu i mniejsza wydajność w środowisku posiadającym natywne rozszerzenie PostGIS.
 
-### Opcja 3: Dwuetapowy algorytm hybrydowy - Pre-filtracja SQL Bounding Box + precyzyjny wzór Haversine’a oraz tabela pivot `issue_upvotes`
+### Opcja 3: Natywne zapytania przestrzenne PostGIS (`ST_DWithin`, `ST_Distance`) z indeksem GiST oraz tabela pivot `issue_upvotes`
 * **Opis:**
-  1. **Etap 1 (Pre-filtracja w SQLite z użyciem indeksu B-Tree):** Dla punktu wskazanego przez użytkownika $(\phi_0, \lambda_0)$ i zadanego promienia $R$ (domyślnie np. $100\text{ m} = 0.1\text{ km}$) serwis wylicza prostokąt ograniczający (*Bounding Box*):
-     * $\Delta\phi = \frac{R}{111.32\text{ km}}$
-     * $\Delta\lambda = \frac{R}{111.32\text{ km} \cdot \cos(\phi_0)}$
-     Następnie zapytanie SQL wybiera wyłącznie aktywne zgłoszenia (status inny niż `rozwiązane` i `odrzucone`, opcjonalnie z tej samej kategorii) mieszczące się w przedziale `latitude BETWEEN minLat AND maxLat` oraz `longitude BETWEEN minLng AND maxLng`.
-  2. **Etap 2 (Dokładna odległość sferyczna - wzór Haversine’a):** Dla odfiltrowanego, niewielkiego podzbioru kandydatów obliczana jest dokładna odległość ortodromiczna $d$ na sferze ziemskiej ($R_Z = 6371000\text{ m}$):
-     $$d = 2 R_Z \arcsin\left(\sqrt{\sin^2\left(\frac{\Delta\phi}{2}\right) + \cos(\phi_1)\cos(\phi_2)\sin^2\left(\frac{\Delta\lambda}{2}\right)}\right)$$
-     Odrzucane są punkty z narożników kwadratu, dla których $d > R$, a wynik jest sortowany rosnąco według dokładnej odległości w metrach (np. `24 m stąd`).
-  3. **Mechanizm „Ten problem również mnie dotyczy”:** Dedykowana tabela relacyjna `issue_upvotes` z unikalnym kluczem złożonym `(issue_id, user_id)` oraz licznikiem `upvotes_count` w tabeli `issues`.
+  1. **Natywna reprezentacja przestrzenna:** Zgłoszenia przechowują punkt geograficzny w kolumnie `location` typu `geometry(Point, 4326)` lub `geography(Point, 4326)`, z założonym indeksem przestrzennym **GiST**.
+  2. **Wyszukiwanie w promieniu (ST_DWithin):** Wyszukiwanie zgłoszeń w zadanym promieniu (domyślnie 100 m) realizowane jest bezpośrednio w zapytaniu SQL przy użyciu funkcji `ST_DWithin`:
+     ```sql
+     SELECT id, title, category_id, status,
+            ST_Distance(location::geography, ST_MakePoint(:lng, :lat)::geography) AS distance_meters
+     FROM issues
+     WHERE status NOT IN ('resolved', 'rejected')
+       AND (:category_id IS NULL OR category_id = :category_id)
+       AND ST_DWithin(location::geography, ST_MakePoint(:lng, :lat)::geography, :radius_meters)
+     ORDER BY distance_meters ASC;
+     ```
+  3. **Dokładne sortowanie (ST_Distance):** Odległość zwracana jest w metrach geodezyjnych na elipsoidzie WGS84, a wyniki są natychmiast sortowane od najbliższego.
+  4. **Mechanizm „Ten problem również mnie dotyczy”:** Dedykowana tabela relacyjna `issue_upvotes` z unikalnym kluczem złożonym `(issue_id, user_id)` oraz licznikiem `upvotes_count` w tabeli `issues`.
 
 ---
 
 ## 3. Decyzja
 
-Wybrano **Opcję 3**: Dwuetapowy algorytm wyszukiwania przestrzennego (**SQLite Bounding Box + formuła Haversine’a**) realizowany w serwisie `IssueSimilarityService` oraz relacja `issue_upvotes` z automatycznym dodaniem użytkownika do obserwujących dane zgłoszenie.
+Wybrano **Opcję 3**: Natywne zapytania przestrzenne **PostGIS (`ST_DWithin` i `ST_Distance`)** z indeksem przestrzennym **GiST** w serwisie `IssueSimilarityService` oraz relację `issue_upvotes` z automatycznym dodaniem użytkownika do obserwujących zgłoszenie.
 
 ---
 
 ## 4. Konsekwencje
 
 ### Pozytywne:
-* **100% przenośności i wysoka wydajność:** Algorytm korzysta ze standardowych indeksów B-Tree w SQLite na kolumnach `(latitude, longitude)`, a jednocześnie zwraca odległość geograficzną z dokładnością co do metra.
-* **Ergonomiczny proces zgłaszania (UX):** Gdy użytkownik w formularzu wybierze punkt na mapie i kategorię, frontend automatycznie odpytuje `POST /api/v1/issues/check-similar`. Jeśli w promieniu np. 100 m istnieją podobne zgłoszenia, użytkownik widzi ich karty z odległością w metrach i przyciskiem **„Ten problem również mnie dotyczy (+1)”**.
-* **Brak sztucznego zawyżania licznika:** Unikalny indeks bazodanowy `(issue_id, user_id)` gwarantuje, że jeden zalogowany użytkownik może poprzeć dane zgłoszenie tylko raz.
-* **Synergia z powiadomieniami:** Kliknięcie „Ten problem również mnie dotyczy” automatycznie zapisuje użytkownika jako obserwującego to zgłoszenie (`issue_followers`), dzięki czemu otrzyma on powiadomienie, gdy urząd naprawi usterkę.
+* **Maksymalna wydajność dzięki GiST:** Indeks przestrzenny pozwala w ułamkach milisekund zawęzić przestrzeń przeszukiwania bez pełnego skanowania tabeli (`Seq Scan`).
+* **Precyzja geodezyjna:** Wykorzystanie typu `geography` w PostGIS uwzględnia krzywiznę Ziemi (elipsoida WGS84), co zapewnia dokładność odległości co do centymetra.
+* **Czysty i prosty kod w Laravelu:** Logika wyszukiwania jest zwięzła i realizowana w całości przez zoptymalizowane zapytanie bazy danych, bez konieczności utrzymywania własnych funkcji trygonometrycznych w PHP.
+* **Płynny UX prewencji duplikatów:** Formularz zgłoszeniowy odpytuje endpoint `POST /api/v1/issues/check-similar`, prezentując mieszkańcowi odległość do podobnych zgłoszeń i umożliwiając podbicie istniejącego problemu przyciskiem **„Ten problem również mnie dotyczy (+1)”**.
+* **Integralność danych:** Unikalny indeks `(issue_id, user_id)` uniemożliwia wielokrotne oddanie głosu przez tego samego użytkownika.
 
 ### Negatywne i mitygacja:
-* **Możliwość zignorowania sugestii przez użytkownika:** Użytkownik nadal zachowuje prawo do kliknięcia „Mimo to utwórz nowe zgłoszenie” (np. gdy tuż obok istniejącej dziury w jezdni znajduje się osobna, nowa usterka).
+* **Wymóg rozszerzenia PostGIS:** Środowisko bazodanowe musi mieć włączone rozszerzenie `CREATE EXTENSION IF NOT EXISTS postgis;`, co zostało zautomatyzowane w pierwszej migracji backendowej Laravela.

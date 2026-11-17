@@ -7,7 +7,7 @@
 | **Status** | Zatwierdzony |
 | **Data opracowania** | 2026-10-31 |
 | **Autorzy** | Jakub Broszko, Maciej Wróblewski, Jacek Kowalczyk |
-| **Stos technologiczny** | Laravel, React, TypeScript, Tailwind CSS, SQLite |
+| **Stos technologiczny** | Laravel, React, TypeScript, Tailwind CSS, PostgreSQL / PostGIS |
 
 ---
 
@@ -25,7 +25,7 @@ Celem projektu jest stworzenie nowoczesnej, responsywnej aplikacji webowej dzia�
 
 ### 1.3. Architektura repozytoriów projektu
 Projekt realizowany jest w modelu **trzech niezależnych repozytoriów** połączonych poprzez sieć i kontrakt REST API:
-1. **`harnasik-backend`** – repozytorium warstwy serwerowej: implementacja logiki biznesowej w PHP 8.3 / Laravel 11, silnik relacyjny SQLite w trybie WAL, obsługa autoryzacji tokenowej (Sanctum) i OAuth (Socialite), kontrola dostępu RBAC oraz automatycznie generowana dokumentacja OpenAPI 3.0 (`/api/documentation`).
+1. **`harnasik-backend`** – repozytorium warstwy serwerowej: implementacja logiki biznesowej w PHP 8.3 / Laravel 11, relacyjna baza danych PostgreSQL 16+ z rozszerzeniem PostGIS, obsługa autoryzacji tokenowej (Sanctum) i OAuth (Socialite), kontrola dostępu RBAC oraz automatycznie generowana dokumentacja OpenAPI 3.0 (`/api/documentation`).
 2. **`harnasik-frontend`** – repozytorium warstwy klienckiej: aplikacja Single Page Application w React 18 / TypeScript / Vite / Tailwind CSS z mapami Leaflet (`react-leaflet`, `leaflet.markercluster`, `leaflet.heat`), komunikująca się z backendem asynchronicznie poprzez klienta HTTP (Axios) z wykorzystaniem zmiennych środowiskowych (`VITE_API_BASE_URL`).
 3. **`harnasik-documentation`** – dedykowane repozytorium dokumentacji (niniejsze repozytorium): centralne źródło wymagań produktowych (PRD), rejestru decyzji architektonicznych (ADR), modelowania procesów domenowych (Event Storming), rejestru zadań (Product Backlog) oraz historyjek użytkownika (User Stories).
 
@@ -108,13 +108,13 @@ W systemie zdefiniowano cztery poziomy dostępu:
 
 * **NFR-01 (Separacja Frontend-Backend, Architektura Multi-Repo i REST API):** Projekt jest zorganizowany w oparciu o trzy niezależne repozytoria (`harnasik-backend`, `harnasik-frontend`, `harnasik-documentation`). Warstwa prezentacji (React + TypeScript) oraz warstwa serwerowa (Laravel) są całkowicie odseparowane pod względem kodu, zależności i wdrożenia, a ich komunikacja odbywa się wyłącznie przez bezstanowe API REST w formacie JSON z obsługą polityki CORS.
 * **NFR-02 (Dokumentacja OpenAPI):** Backend musi posiadać kompletną, aktualną dokumentację zgodną ze specyfikacją **OpenAPI 3.0** (wygenerowaną przy użyciu `l5-swagger`), udostępniającą interaktywny interfejs Swagger UI dla wszystkich endpointów.
-* **NFR-03 (Geolokalizacja i zapytania przestrzenne):** System musi przechowywać współrzędne geograficzne w układzie WGS84 (`latitude`, `longitude`) i realizować wyszukiwanie bliskich zgłoszeń z uwzględnieniem rzeczywistej odległości geograficznej na sferze (pre-filtracja Bounding Box w SQLite + formuła Haversine’a).
+* **NFR-03 (Geolokalizacja i zapytania przestrzenne GIS):** System wykorzystuje PostgreSQL z rozszerzeniem PostGIS do przechowywania danych geoprzestrzennych w układzie WGS84 (kolumna `location` typu `geometry(Point, 4326)` lub `geography(Point, 4326)` wraz ze współrzędnymi pomocniczymi `latitude`/`longitude`). Tabela posiada indeks przestrzenny GiST, a wyszukiwanie zgłoszeń w zadanym promieniu (np. 100 m) oraz sortowanie po odległości geodezyjnej realizowane są za pomocą natywnych funkcji PostGIS (`ST_DWithin`, `ST_Distance`).
 * **NFR-04 (Responsywność - Mobile First):** Interfejs użytkownika zbudowany w Tailwind CSS musi być w pełni responsywny i przystosowany do wygodnego zgłaszania usterek w terenie za pomocą smartfona.
 * **NFR-05 (Bezpieczeństwo):**
   * Walidacja wszystkich danych wejściowych po stronie serwera (Laravel Form Requests).
   * Ochrona przed atakami CSRF/XSS oraz SQL Injection (Eloquent ORM + bindowanie parametrów).
   * Walidacja typów MIME oraz rozmiaru przesyłanych plików graficznych (maks. 5 MB na zdjęcie, formaty JPEG/PNG/WebP).
-* **NFR-06 (Wydajność bazy SQLite):** Baza danych SQLite musi pracować w trybie **WAL (Write-Ahead Logging)** z założonymi indeksami na kolumnach współrzędnych (`latitude`, `longitude`), statusu (`status`) oraz kategorii (`category_id`).
+* **NFR-06 (Wydajność i konfiguracja bazy PostgreSQL + PostGIS):** Baza danych PostgreSQL działa z aktywnym rozszerzeniem PostGIS. Tabela `issues` posiada indeks przestrzenny GiST na danych geometrycznych oraz indeksy B-Tree na kolumnach statusu (`status`), kategorii (`category_id`) i dat (`created_at`, `resolved_at`). Zapewnia to pełną współbieżność (MVCC), brak blokad przy jednoczesnym zapisie i odczycie oraz błyskawiczne zapytania analityczne.
 
 ---
 
@@ -137,7 +137,7 @@ W systemie zdefiniowano cztery poziomy dostępu:
 
 1. **`users`**: `id`, `name`, `email`, `password` (nullable dla OAuth), `oauth_provider`, `oauth_id`, `email_verified_at`, `is_active`, `timestamps`. (Role obsługiwane przez tabele pakietu `spatie/laravel-permission`: `roles`, `permissions`, `model_has_roles`).
 2. **`categories`**: `id`, `name`, `slug`, `description`, `icon`, `color`, `is_active`, `timestamps`.
-3. **`issues` (Zgłoszenia)**: `id`, `user_id` (autor), `category_id`, `title`, `description`, `latitude` (DECIMAL/REAL), `longitude` (DECIMAL/REAL), `address_hint`, `status` (ENUM: `reported`, `accepted`, `forwarded`, `in_progress`, `resolved`, `rejected`), `upvotes_count` (cache licznika „dotyczy mnie”), `resolved_at` (nullable timestamp do obliczania średniego czasu realizacji), `timestamps`.
+3. **`issues` (Zgłoszenia)**: `id`, `user_id` (autor), `category_id`, `title`, `description`, `latitude` (DOUBLE PRECISION), `longitude` (DOUBLE PRECISION), `location` (PostGIS `geometry(Point, 4326)` z indeksem przestrzennym GiST), `address_hint`, `status` (ENUM: `reported`, `accepted`, `forwarded`, `in_progress`, `resolved`, `rejected`), `upvotes_count` (cache licznika „dotyczy mnie”), `resolved_at` (nullable timestamp do obliczania średniego czasu realizacji), `timestamps`.
 4. **`issue_attachments` (Zdjęcia)**: `id`, `issue_id`, `uploaded_by`, `file_path`, `type` (`before` - zdjęcie usterki / `after` - zdjęcie po naprawie), `mime_type`, `file_size`, `timestamps`.
 5. **`issue_upvotes` („Ten problem również mnie dotyczy”)**: `id`, `issue_id`, `user_id`, `created_at` (unikalny klucz złożony `(issue_id, user_id)`).
 6. **`issue_followers` (Obserwowane zgłoszenia)**: `id`, `issue_id`, `user_id`, `created_at` (unikalny klucz złożony `(issue_id, user_id)`).

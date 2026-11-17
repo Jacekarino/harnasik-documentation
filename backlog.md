@@ -4,7 +4,7 @@
 | :--- | :--- |
 | **Projekt** | HARNASIK - Platforma do zgłaszania i obsługi usterek infrastruktury miejskiej |
 | **Zespół** | Jakub Broszko, Maciej Wróblewski, Jacek Kowalczyk |
-| **Stos technologiczny** | Laravel, React, TypeScript, Tailwind CSS, SQLite |
+| **Stos technologiczny** | Laravel, React, TypeScript, Tailwind CSS, PostgreSQL / PostGIS |
 | **Metodyka priorytetyzacji** | MoSCoW (*Must Have*, *Should Have*, *Could Have*) |
 | **Skala estymacji** | Story Points (ciąg Fibonacciego: 1, 2, 3, 5, 8) |
 
@@ -14,7 +14,7 @@
 
 | Sprint | Cel Sprintu | Zakres zadań (ID) | Suma Story Points |
 | :--- | :--- | :--- | :---: |
-| **Sprint 1** | Fundamenty architektury, baza SQLite (WAL), OpenAPI, uwierzytelnianie (klasyczne + OAuth 2.0) oraz RBAC | `PBI-01` – `PBI-07` | **24 SP** |
+| **Sprint 1** | Fundamenty architektury, baza PostgreSQL z PostGIS, OpenAPI, uwierzytelnianie (klasyczne + OAuth 2.0) oraz RBAC | `PBI-01` – `PBI-07` | **24 SP** |
 | **Sprint 2** | Mapa interaktywna (Leaflet/OSM), zgłaszanie usterek z GPS i zdjęciami, wyszukiwanie duplikatów w pobliżu oraz „dotyczy mnie” | `PBI-08` – `PBI-15` | **34 SP** |
 | **Sprint 3** | Panel Pracownika Urzędu (6 statusów, komentarze, zdjęcia po naprawie), obserwowanie zgłoszeń i system powiadomień | `PBI-16` – `PBI-21` | **22 SP** |
 | **Sprint 4** | Statystyki publiczne, Panel Administratora (Mapa ciepła / Heatmap, użytkownicy, kategorie, logi aplikacji) oraz testy E2E | `PBI-22` – `PBI-27` | **23 SP** |
@@ -27,7 +27,7 @@
 | ID | User Story | Epik | Tytuł zadania / funkcjonalności | Rola | Warstwa | Priorytet | SP | Sprint | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :---: | :---: | :--- |
 | **PBI-01** | Tech / NFR-01 | Infrastruktura | Inicjalizacja trzech niezależnych repozytoriów (backend Laravel 11 API-only, frontend React 18 TS Vite SPA, documentation) + konfiguracja CORS i połączenia przez REST API | Deweloper | Fullstack | Must Have | 3 | Sprint 1 | Do zrobienia |
-| **PBI-02** | Tech / NFR-06 | Infrastruktura | Konfiguracja bazy danych SQLite w trybie WAL, przygotowanie migracji wszystkich tabel, indeksów B-Tree (`latitude`, `longitude`) oraz seederów | Deweloper | Backend | Must Have | 5 | Sprint 1 | Do zrobienia |
+| **PBI-02** | Tech / NFR-06 | Infrastruktura | Konfiguracja bazy danych PostgreSQL z rozszerzeniem PostGIS, przygotowanie migracji tabel, indeksu przestrzennego GiST (dla lokalizacji zgłoszeń), indeksów B-Tree oraz seederów | Deweloper | Backend | Must Have | 5 | Sprint 1 | Do zrobienia |
 | **PBI-03** | Tech / NFR-02 | Infrastruktura | Konfiguracja `l5-swagger` (OpenAPI 3.0), schematu autoryzacji Bearer oraz generowania dokumentacji Swagger UI (`/api/documentation`) | Deweloper | Backend | Must Have | 3 | Sprint 1 | Do zrobienia |
 | **PBI-04** | US-01 | EPIC-01: Auth | Implementacja rejestracji klasycznej (e-mail + hasło) w REST API oraz formularza rejestracji w React z walidacją | Gość | Fullstack | Must Have | 3 | Sprint 1 | Do zrobienia |
 | **PBI-05** | US-02 | EPIC-01: Auth | Implementacja logowania i wylogowania opartego o tokeny Laravel Sanctum oraz obsługa stanu autoryzacji w React Context | Użytkownik | Fullstack | Must Have | 2 | Sprint 1 | Do zrobienia |
@@ -37,7 +37,7 @@
 | **PBI-09** | US-05 | EPIC-02: Mapa | Endpoint `GET /api/v1/issues` oraz panel filtrowania zgłoszeń na mapie i liście według kategorii i statusu | Gość / Mieszkaniec | Fullstack | Should Have | 3 | Sprint 2 | Do zrobienia |
 | **PBI-10** | US-06 | EPIC-02: Mapa | Widok karty szczegółów zgłoszenia (opis, lokalizacja, galeria zdjęć „przed” i „po naprawie”, oś czasu statusów i komentarze urzędowe) | Gość / Mieszkaniec | Fullstack | Must Have | 3 | Sprint 2 | Do zrobienia |
 | **PBI-11** | US-07 | EPIC-03: Zgłaszanie | Obsługa wyboru lokalizacji nowego zgłoszenia: kliknięcie pinezki na mapie lub pobranie pozycji z GPS urządzenia (HTML5 Geolocation API) | Mieszkaniec | Frontend | Must Have | 3 | Sprint 2 | Do zrobienia |
-| **PBI-12** | US-08 | EPIC-03: Zgłaszanie | Serwis `IssueSimilarityService` i endpoint `POST /api/v1/issues/check-similar` wyszukujący podobne zgłoszenia w pobliżu (SQLite Bounding Box + wzór Haversine’a) | Mieszkaniec | Backend | Must Have | 5 | Sprint 2 | Do zrobienia |
+| **PBI-12** | US-08 | EPIC-03: Zgłaszanie | Serwis `IssueSimilarityService` i endpoint `POST /api/v1/issues/check-similar` wyszukujący podobne zgłoszenia w pobliżu z wykorzystaniem natywnych funkcji PostGIS (`ST_DWithin`, `ST_Distance`, indeks GiST) | Mieszkaniec | Backend | Must Have | 5 | Sprint 2 | Do zrobienia |
 | **PBI-13** | US-08 | EPIC-03: Zgłaszanie | Komponent ostrzegania o potencjalnych duplikatach w pobliżu przed dodaniem zgłoszenia (prezentacja odległości w metrach i podglądu) | Mieszkaniec | Frontend | Must Have | 3 | Sprint 2 | Do zrobienia |
 | **PBI-14** | US-07 | EPIC-03: Zgłaszanie | Endpoint `POST /api/v1/issues` i formularz tworzenia nowego zgłoszenia z wyborem kategorii, opisem i uploadem zdjęć (`multipart/form-data`, `Storage`) | Mieszkaniec | Fullstack | Must Have | 5 | Sprint 2 | Do zrobienia |
 | **PBI-15** | US-09, US-10 | EPIC-03: Zgłaszanie | Funkcjonalność „Ten problem również mnie dotyczy” (`POST /api/v1/issues/{id}/affect-me`), licznik poparcia oraz widok „Moje zgłoszenia” | Mieszkaniec | Fullstack | Must Have | 5 | Sprint 2 | Do zrobienia |

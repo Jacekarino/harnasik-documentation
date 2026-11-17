@@ -153,7 +153,7 @@
   > **aby** upewnić się, czy ktoś inny nie zgłosił już tej samej usterki.
 * **Kryteria akceptacji (Acceptance Criteria):**
   - [ ] Po wskazaniu współrzędnych na mapie (oraz opcjonalnie kategorii) aplikacja wysyła zapytanie `POST /api/v1/issues/check-similar`.
-  - [ ] Backend wyszukuje aktywne zgłoszenia w promieniu geograficznym (domyślnie 100 metrów) z wykorzystaniem pre-filtracji *Bounding Box* w SQLite oraz dokładnego wzoru sferycznego Haversine’a.
+  - [ ] Backend wyszukuje aktywne zgłoszenia w promieniu geograficznym (domyślnie 100 metrów) z wykorzystaniem natywnych funkcji przestrzennych PostGIS (`ST_DWithin`, `ST_Distance`) oraz indeksu przestrzennego GiST.
   - [ ] Jeśli w pobliżu istnieją zgłoszenia, użytkownik widzi modal/sekcję ostrzegawczą z listą tych zgłoszeń, wyliczoną odległością w metrach (np. „32 m od wybranego punktu”) oraz ich aktualnym statusem.
   - [ ] Użytkownik może zdecydować, czy dołącza do istniejącego zgłoszenia („Ten problem również mnie dotyczy”), czy mimo to tworzy nowe zgłoszenie.
 

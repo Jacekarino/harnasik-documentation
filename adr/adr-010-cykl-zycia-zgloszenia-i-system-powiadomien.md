@@ -53,7 +53,7 @@ Wybrano **Opcję 2**: Wykorzystanie silnie typowanego **`IssueStatus` Enum**, de
 ### Pozytywne:
 * **Pełna transparentność dla mieszkańców:** Na karcie zgłoszenia widoczna jest kompletna oś czasu (timeline) pokazująca kiedy zgłoszenie zostało przyjęte, przekazane do realizacji, wzięte w realizację i ostatecznie rozwiązane, wraz z publicznymi komentarzami urzędnika.
 * **Niezawodne powiadomienia:** Każdy obserwujący użytkownik natychmiast po zmianie statusu widzi w interfejsie React nieprzeczytane powiadomienie (np. *„Zgłoszenie #42 (Uszkodzona latarnia) zmieniło status z 'w realizacji' na 'rozwiązane'”*).
-* **Dokładne i szybkie statystyki publiczne:** Kolumna `resolved_at` w tabeli `issues` umożliwia obliczenie średniego czasu realizacji jednym zapytaniem agregującym `AVG(julianday(resolved_at) - julianday(created_at))` w SQLite bez konieczności przeszukiwania logów.
+* **Dokładne i szybkie statystyki publiczne:** Kolumna `resolved_at` w tabeli `issues` umożliwia obliczenie średniego czasu realizacji jednym zapytaniem agregującym `AVG(EXTRACT(EPOCH FROM (resolved_at - created_at)))` w PostgreSQL bez konieczności przeszukiwania logów.
 
 ### Negatywne i mitygacja:
 * **Ponowne otwarcie zgłoszenia:** W przypadku zmiany statusu z `rozwiązane` z powrotem na `w realizacji`, serwis automatycznie czyści pole `resolved_at` (`null`), aby nie przekłamywać statystyk średniego czasu naprawy.
