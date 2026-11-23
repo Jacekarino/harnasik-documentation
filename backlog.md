@@ -6,7 +6,7 @@
 | **Zespół** | Jakub Broszko, Maciej Wróblewski, Jacek Kowalczyk |
 | **Stos technologiczny** | Laravel, React, TypeScript, Tailwind CSS, PostgreSQL / PostGIS |
 | **Metodyka priorytetyzacji** | MoSCoW (*Must Have*, *Should Have*, *Could Have*) |
-| **Skala estymacji** | Story Points (ciąg Fibonacciego: 1, 2, 3, 5, 8) |
+| **Skala estymacji** | Story Points (ciąg Fibonacciego) |
 
 ---
 
@@ -15,10 +15,10 @@
 | Sprint | Cel Sprintu | Zakres zadań (ID) | Suma Story Points |
 | :--- | :--- | :--- | :---: |
 | **Sprint 1** | Fundamenty architektury, baza PostgreSQL z PostGIS, OpenAPI, uwierzytelnianie (klasyczne + OAuth 2.0) oraz RBAC | `PBI-01` – `PBI-07` | **24 SP** |
-| **Sprint 2** | Mapa interaktywna (Leaflet/OSM), zgłaszanie usterek z GPS i zdjęciami, wyszukiwanie duplikatów w pobliżu oraz „dotyczy mnie” | `PBI-08` – `PBI-15` | **34 SP** |
+| **Sprint 2** | Mapa interaktywna (Leaflet/OSM), zgłaszanie usterek z GPS i zdjęciami, wyszukiwanie duplikatów w pobliżu oraz „dotyczy mnie” | `PBI-08` – `PBI-15` | **32 SP** |
 | **Sprint 3** | Panel Pracownika Urzędu (6 statusów, komentarze, zdjęcia po naprawie), obserwowanie zgłoszeń i system powiadomień | `PBI-16` – `PBI-21` | **22 SP** |
 | **Sprint 4** | Statystyki publiczne, Panel Administratora (Mapa ciepła / Heatmap, użytkownicy, kategorie, logi aplikacji) oraz testy E2E | `PBI-22` – `PBI-27` | **23 SP** |
-| **Razem** | **Pełne wdrożenie wymagań funkcjonalnych i niefunkcjonalnych** | **27 elementów PBI** | **103 SP** |
+| **Razem** | **Pełne wdrożenie wymagań funkcjonalnych i niefunkcjonalnych** | **27 elementów PBI** | **101 SP** |
 
 ---
 
